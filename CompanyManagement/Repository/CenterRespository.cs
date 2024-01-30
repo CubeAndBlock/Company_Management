@@ -47,5 +47,17 @@ namespace CompanyManagement.Repository
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
         }
+
+        public bool UpdateCenter(Center center)
+        {
+            _context.Update(center);
+            return Save();
+        }
+
+        public bool DeleteCenter(Center center)
+        {
+            _context.Remove(center);
+            return Save();
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace CompanyManagement.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<Project>))]
         public IActionResult GetProjects()
         {
-            var projects = _mapper.Map<List<DepartmentDto>>(_projectRepository.GetProjects());
+            var projects = _mapper.Map<List<ProjectDto>>(_projectRepository.GetProjects());
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -89,6 +89,59 @@ namespace CompanyManagement.Controllers
             }
 
             return Ok("Successfully created");
+        }
+        [HttpPut("{projectId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateProject(int projectId, [FromBody] ProjectDto updatedProject)
+        {
+            if (updatedProject == null)
+                return BadRequest(ModelState);
+
+            if (projectId != updatedProject.Id)
+                return BadRequest(ModelState);
+
+            if (!_projectRepository.ProjectExists(projectId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var projectMap = _mapper.Map<Project>(updatedProject);
+
+            if (!_projectRepository.UpdateProject(projectMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating project");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{projectId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteProject(int projectId)
+        {
+            if (!_projectRepository.ProjectExists(projectId))
+            {
+                return NotFound();
+            }
+
+            var projectToDelete = _projectRepository.GetProjectById(projectId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_projectRepository.DeleteProject(projectToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting project");
+            }
+
+            return NoContent();
         }
     }
 }

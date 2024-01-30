@@ -74,6 +74,59 @@ namespace CompanyManagement.Controllers
 
             return Ok("Successfully created");
         }
+        [HttpPut("{companyId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCompany(int companyId, [FromBody]CompanyDto updatedCompany)
+        {
+            if(updatedCompany == null)
+                return BadRequest(ModelState);
+
+            if(companyId != updatedCompany.Id)
+                return BadRequest(ModelState);
+
+            if (!_companyRepository.CompanyExists(companyId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var companyMap = _mapper.Map<Company>(updatedCompany);
+
+            if (!_companyRepository.UpdateCompany(companyMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating company");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{companyId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCompany(int companyId)
+        {
+            if (!_companyRepository.CompanyExists(companyId)){
+                return NotFound();
+            }
+
+            var companyToDelete = _companyRepository.GetCompanyById(companyId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_companyRepository.DeleteCompany(companyToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting company");
+            }
+
+            return NoContent();
+        }
+
     }
 }
  

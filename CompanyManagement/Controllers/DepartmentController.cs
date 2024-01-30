@@ -2,6 +2,7 @@
 using CompanyManagement.Dto;
 using CompanyManagement.Interfaces;
 using CompanyManagement.Models;
+using CompanyManagement.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyManagement.Controllers
@@ -88,6 +89,59 @@ namespace CompanyManagement.Controllers
             }
 
             return Ok("Successfully created");
+        }
+        [HttpPut("{departmentId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateDeparatment(int departmentId, [FromBody] DepartmentDto updatedDepartment)
+        {
+            if (updatedDepartment == null)
+                return BadRequest(ModelState);
+
+            if (departmentId != updatedDepartment.Id)
+                return BadRequest(ModelState);
+
+            if (!_departmentRepository.DepartmentExists(departmentId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var departmentMap = _mapper.Map<Department>(updatedDepartment);
+
+            if (!_departmentRepository.UpdateDepartment(departmentMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating department");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{departmentId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteDepartment(int departmentId)
+        {
+            if (!_departmentRepository.DepartmentExists(departmentId))
+            {
+                return NotFound();
+            }
+
+            var departmentToDelete = _departmentRepository.GetDepartmentById(departmentId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_departmentRepository.DeleteDepartment(departmentToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting department");
+            }
+
+            return NoContent();
         }
     }
 }

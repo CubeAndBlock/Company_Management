@@ -9,6 +9,8 @@ namespace CompanyManagement.Interfaces
         Company GetCompanyByName(string name);
         bool CompanyExists(int compId);
         bool CreateCompany(Company company);
+        bool UpdateCompany(Company company);
+        bool DeleteCompany(Company company);
         bool Save();
     }
 

@@ -18,6 +18,12 @@ namespace CompanyManagement.Repository
             return Save();
         }
 
+        public bool DeleteProject(Project project)
+        {
+            _context?.Remove(project);
+            return Save();
+        }
+
         public ICollection<Department> GetDepartmentByProject(int projectId)
         {
             return _context.Projects.Where(p => p.Id == projectId).Select(p => p.Department).ToList();
@@ -47,6 +53,12 @@ namespace CompanyManagement.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdateProject(Project project)
+        {
+            _context.Update(project);
+            return Save();
         }
     }
 }

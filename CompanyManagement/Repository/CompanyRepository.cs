@@ -23,6 +23,12 @@ namespace CompanyManagement.Repository
             return Save();
         }
 
+        public bool DeleteCompany(Company company)
+        {
+            _context.Remove(company);
+            return Save();
+        }
+
         public ICollection<Company> GetCompanies()
         {
             return _context.Companies.OrderBy(p => p.Id).ToList();
@@ -41,6 +47,12 @@ namespace CompanyManagement.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdateCompany(Company company)
+        {
+            _context.Update(company);
+            return Save();
         }
     }
 }

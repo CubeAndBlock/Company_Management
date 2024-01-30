@@ -89,5 +89,58 @@ namespace CompanyManagement.Controllers
 
             return Ok("Successfully created");
         }
+        [HttpPut("{centerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCenter(int centerId, [FromBody] CenterDto updatedCenter)
+        {
+            if (updatedCenter == null)
+                return BadRequest(ModelState);
+
+            if (centerId != updatedCenter.Id)
+                return BadRequest(ModelState);
+
+            if (!_centerRepository.CenterExists(centerId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var centerMap = _mapper.Map<Center>(updatedCenter);
+
+            if (!_centerRepository.UpdateCenter(centerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating center");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{centerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCenter(int centerId)
+        {
+            if (!_centerRepository.CenterExists(centerId))
+            {
+                return NotFound();
+            }
+
+            var centerToDelete = _centerRepository.GetCenterById(centerId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_centerRepository.DeleteCenter(centerToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting center");
+            }
+
+            return NoContent();
+        }
     }
 }

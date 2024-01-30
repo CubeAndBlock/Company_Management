@@ -24,7 +24,7 @@ namespace CompanyManagement.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<Employee>))]
         public IActionResult GetEmployees()
         {
-            var employees = _mapper.Map<List<DepartmentDto>>(_employeeRepository.GetEmployees());
+            var employees = _mapper.Map<List<EmployeeDto>>(_employeeRepository.GetEmployees());
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -89,6 +89,59 @@ namespace CompanyManagement.Controllers
             }
 
             return Ok("Successfully created");
+        }
+        [HttpPut("{employeeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCenter(int employeeId, [FromBody] EmployeeDto updatedEmployee)
+        {
+            if (updatedEmployee == null)
+                return BadRequest(ModelState);
+
+            if (employeeId != updatedEmployee.Id)
+                return BadRequest(ModelState);
+
+            if (!_employeeRepository.EmployeeExists(employeeId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var employeeMap = _mapper.Map<Employee>(updatedEmployee);
+
+            if (!_employeeRepository.UpdateEmployee(employeeMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating employee");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{employeeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteEmployee(int employeeId)
+        {
+            if (!_employeeRepository.EmployeeExists(employeeId))
+            {
+                return NotFound();
+            }
+
+            var employeeToDelete = _employeeRepository.GetEmployeeById(employeeId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_employeeRepository.DeleteEmployee(employeeToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting employee");
+            }
+
+            return NoContent();
         }
     }
 }

@@ -19,6 +19,12 @@ namespace CompanyManagement.Repository
             return Save();
         }
 
+        public bool DeleteEmployee(Employee employee)
+        {
+            _context.Remove(employee);
+            return Save();
+        }
+
         public bool EmployeeExists(int employeeId)
         {
             return _context.Employees.Any(e => e.Id == employeeId);
@@ -48,6 +54,12 @@ namespace CompanyManagement.Repository
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdateEmployee(Employee employee)
+        {
+            _context.Update(employee);
+            return Save();
         }
     }
 }
