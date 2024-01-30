@@ -16,6 +16,13 @@ namespace CompanyManagement.Repository
             return _context.Companies.Any(p => p.Id == compId);
         }
 
+        public bool CreateCompany(Company company)
+        {
+            //Change Tracker
+            _context.Add(company);
+            return Save();
+        }
+
         public ICollection<Company> GetCompanies()
         {
             return _context.Companies.OrderBy(p => p.Id).ToList();
@@ -28,6 +35,12 @@ namespace CompanyManagement.Repository
         public Company GetCompanyByName(string name)
         {
             return _context.Companies.Where(p => p.Name == name).FirstOrDefault();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
         }
     }
 }

@@ -11,11 +11,13 @@ namespace CompanyManagement.Controllers
     public class DepartmentController : Controller
     {
         private readonly IDepartmentRepository _departmentRepository;
+        private readonly ICenterRespository _centerRespository;
         private readonly IMapper _mapper;
-        public DepartmentController(IDepartmentRepository departmentRepository, IMapper mapper)
+        public DepartmentController(IDepartmentRepository departmentRepository, IMapper mapper, ICenterRespository centerRespository)
         {
             _departmentRepository = departmentRepository;
             _mapper = mapper;
+            _centerRespository = centerRespository;
         }
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Department>))]
@@ -51,6 +53,41 @@ namespace CompanyManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
             return Ok(departments);
+        }
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateDepartment([FromQuery] int centerId, [FromBody] DepartmentDto departmentCreate)
+        {
+            if (departmentCreate == null)
+                return BadRequest(ModelState);
+
+            var department = _departmentRepository.GetDepartments()
+                .Where(c => c.Name.Trim().ToUpper() == departmentCreate.Name.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (department != null)
+            {
+                ModelState.AddModelError("", "Department already exists");
+                return StatusCode(442, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var departmentMap = _mapper.Map<Department>(departmentCreate);
+
+            departmentMap.Center = _centerRespository.GetCenterById(centerId);
+
+            if (!_departmentRepository.CreateDepartment(departmentMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
         }
     }
 }

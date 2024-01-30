@@ -9,5 +9,7 @@ namespace CompanyManagement.Interfaces
         ICollection<Project> GetProjects(); 
         ICollection<Department> GetDepartmentByProject(int projectId);
         bool ProjectExists(int projectId);
+        bool CreateProject(Project project);
+        bool Save();
     }
 }

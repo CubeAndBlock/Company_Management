@@ -13,10 +13,12 @@ namespace CompanyManagement.Controllers
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
-        public EmployeeController(IEmployeeRepository employeeRepository, IMapper mapper)
+        private readonly IDepartmentRepository _departmentRepository;
+        public EmployeeController(IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _mapper = mapper;
+            _departmentRepository = departmentRepository;
         }
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Employee>))]
@@ -52,6 +54,41 @@ namespace CompanyManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
             return Ok(employees);
+        }
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateEmployee([FromQuery] int departmentId, [FromBody] EmployeeDto employeeCreate)
+        {
+            if (employeeCreate == null)
+                return BadRequest(ModelState);
+
+            var employee = _employeeRepository.GetEmployees()
+                .Where(c => c.Name.Trim().ToUpper() == employeeCreate.Name.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (employee != null)
+            {
+                ModelState.AddModelError("", "Employee already exists");
+                return StatusCode(442, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var employeeMap = _mapper.Map<Employee>(employeeCreate);
+
+            employeeMap.Department = _departmentRepository.GetDepartmentById(departmentId);
+
+            if (!_employeeRepository.CreateEmployee(employeeMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
         }
     }
 }

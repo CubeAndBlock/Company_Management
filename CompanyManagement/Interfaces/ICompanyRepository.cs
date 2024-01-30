@@ -8,6 +8,8 @@ namespace CompanyManagement.Interfaces
         Company GetCompanyById(int id);
         Company GetCompanyByName(string name);
         bool CompanyExists(int compId);
+        bool CreateCompany(Company company);
+        bool Save();
     }
 
 }
