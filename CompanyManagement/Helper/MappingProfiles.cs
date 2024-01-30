@@ -9,10 +9,15 @@ namespace CompanyManagement.Helper
         public MappingProfiles()
         {
             CreateMap<Company, CompanyDto>();
+            CreateMap<CompanyDto, Company>();
             CreateMap<Center, CenterDto>();
+            CreateMap<CenterDto, Center>();
             CreateMap<Department, DepartmentDto>();
-            CreateMap<Project, DepartmentDto>();
+            CreateMap<DepartmentDto, Department>();
+            CreateMap<Project, ProjectDto>();
+            CreateMap<ProjectDto, Project>();
             CreateMap<Employee, EmployeeDto>();
+            CreateMap<EmployeeDto, Employee>();
         }
     }
 }

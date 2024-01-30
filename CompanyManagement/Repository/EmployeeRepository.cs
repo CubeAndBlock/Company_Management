@@ -13,6 +13,18 @@ namespace CompanyManagement.Repository
             _context = context;
         }
 
+        public bool CreateEmployee(Employee employee)
+        {
+            _context.Add(employee);
+            return Save();
+        }
+
+        public bool DeleteEmployee(Employee employee)
+        {
+            _context.Remove(employee);
+            return Save();
+        }
+
         public bool EmployeeExists(int employeeId)
         {
             return _context.Employees.Any(e => e.Id == employeeId);
@@ -36,6 +48,18 @@ namespace CompanyManagement.Repository
         public ICollection<Employee> GetEmployees()
         {
             return _context.Employees.ToList();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
+
+        public bool UpdateEmployee(Employee employee)
+        {
+            _context.Update(employee);
+            return Save();
         }
     }
 }

@@ -11,11 +11,13 @@ namespace CompanyManagement.Controllers
     public class CenterController : Controller
     {
         private readonly ICenterRespository _centerRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly IMapper _mapper;
-        public CenterController(ICenterRespository centerRepository, IMapper mapper)
+        public CenterController(ICenterRespository centerRepository, IMapper mapper, ICompanyRepository companyRepository)
         {
             _centerRepository = centerRepository;
             _mapper = mapper;
+            _companyRepository = companyRepository;
         }
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Center>))]
@@ -51,6 +53,94 @@ namespace CompanyManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
             return Ok(companies);
+        }
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCenter([FromQuery] int companyId, [FromBody] CenterDto centerCreate)
+        {
+            if (centerCreate == null)
+                return BadRequest(ModelState);
+
+            var center = _centerRepository.GetCenters()
+                .Where(c => c.Name.Trim().ToUpper() == centerCreate.Name.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (center != null)
+            {
+                ModelState.AddModelError("", "Center already exists");
+                return StatusCode(442, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var centerMap = _mapper.Map<Center>(centerCreate);
+
+            centerMap.Company = _companyRepository.GetCompanyById(companyId);
+
+            if (!_centerRepository.CreateCenter(centerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
+        }
+        [HttpPut("{centerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCenter(int centerId, [FromBody] CenterDto updatedCenter)
+        {
+            if (updatedCenter == null)
+                return BadRequest(ModelState);
+
+            if (centerId != updatedCenter.Id)
+                return BadRequest(ModelState);
+
+            if (!_centerRepository.CenterExists(centerId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var centerMap = _mapper.Map<Center>(updatedCenter);
+
+            if (!_centerRepository.UpdateCenter(centerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating center");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{centerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCenter(int centerId)
+        {
+            if (!_centerRepository.CenterExists(centerId))
+            {
+                return NotFound();
+            }
+
+            var centerToDelete = _centerRepository.GetCenterById(centerId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_centerRepository.DeleteCenter(centerToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting center");
+            }
+
+            return NoContent();
         }
     }
 }

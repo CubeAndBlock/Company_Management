@@ -13,6 +13,18 @@ namespace CompanyManagement.Repository
             _context = context;
         }
 
+        public bool CreateDepartment(Department department)
+        {
+            _context.Add(department);
+            return Save();
+        }
+
+        public bool DeleteDepartment(Department department)
+        {
+            _context.Remove(department);
+            return Save();
+        }
+
         public bool DepartmentExists(int departmentId)
         {
             return _context.Departments.Any(d => d.Id == departmentId);
@@ -35,6 +47,18 @@ namespace CompanyManagement.Repository
         public ICollection<Department> GetDepartments()
         {
             return _context.Departments.ToList();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true: false;
+        }
+
+        public bool UpdateDepartment(Department department)
+        {
+            _context.Update(department);
+            return Save();
         }
     }
 }

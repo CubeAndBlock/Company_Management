@@ -35,5 +35,29 @@ namespace CompanyManagement.Repository
         {
             return _context.Centers.ToList();
         }
+
+        public bool CreateCenter(Center center)
+        {
+            _context.Add(center);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
+
+        public bool UpdateCenter(Center center)
+        {
+            _context.Update(center);
+            return Save();
+        }
+
+        public bool DeleteCenter(Center center)
+        {
+            _context.Remove(center);
+            return Save();
+        }
     }
 }
